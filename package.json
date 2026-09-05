@@ -1,0 +1,13 @@
+{
+  "name": "lichess-review-queue",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local random review queue for past Lichess games.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+

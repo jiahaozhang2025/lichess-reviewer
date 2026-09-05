@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A personal random review queue for your past Lichess games." />
+    <title>Lichess Review Queue</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%232d6a4f%22/><text x=%2232%22 y=%2247%22 text-anchor=%22middle%22 font-size=%2244%22 fill=%22white%22>♞</text></svg>" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Lichess Review Queue home">
+          <span class="brand-mark" aria-hidden="true">♞</span>
+          <span>Review Queue</span>
+        </a>
+        <p>Your old games, one useful surprise at a time.</p>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Personal chess study</p>
+            <h1>Make your next game review an easy decision.</h1>
+            <p class="hero-text">Sync your public Lichess history, draw an unanalyzed game at random, and keep a quiet record of what you’ve covered.</p>
+          </div>
+
+          <form id="sync-form" class="sync-card">
+            <label for="username">Lichess username</label>
+            <div class="sync-row">
+              <input id="username" name="username" autocomplete="username" placeholder="e.g. DrNykterstein" required />
+              <select id="max-games" aria-label="Number of recent games to sync">
+                <option value="100">Last 100</option>
+                <option value="500" selected>Last 500</option>
+                <option value="1000">Last 1,000</option>
+                <option value="3000">Last 3,000</option>
+              </select>
+              <button class="button primary" type="submit" id="sync-button">Sync games</button>
+            </div>
+            <p class="form-help">No password or token needed. Only public game data is downloaded.</p>
+          </form>
+        </section>
+
+        <section id="workspace" class="workspace hidden" aria-live="polite">
+          <div class="summary-grid">
+            <article class="stat-card">
+              <span class="stat-label">Synced</span>
+              <strong id="total-count">0</strong>
+              <span>games</span>
+            </article>
+            <article class="stat-card accent-card">
+              <span class="stat-label">Ready to review</span>
+              <strong id="ready-count">0</strong>
+              <span>in this pool</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-label">Completed</span>
+              <strong id="reviewed-count">0</strong>
+              <span>reviewed or analyzed</span>
+            </article>
+          </div>
+
+          <section class="draw-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Random draw</p>
+                <h2>What should we look at?</h2>
+              </div>
+              <button id="draw-button" class="button draw-button" type="button">
+                <span aria-hidden="true">↻</span> Pick a random game
+              </button>
+            </div>
+
+            <div class="filters" aria-label="Game filters">
+              <label>
+                <span>Review status</span>
+                <select id="status-filter">
+                  <option value="unreviewed" selected>Not completed</option>
+                  <option value="all">All games</option>
+                  <option value="reviewed">Completed only</option>
+                </select>
+              </label>
+              <label>
+                <span>Result</span>
+                <select id="result-filter">
+                  <option value="all">Any result</option>
+                  <option value="win">Wins</option>
+                  <option value="loss">Losses</option>
+                  <option value="draw">Draws</option>
+                </select>
+              </label>
+              <label>
+                <span>Speed</span>
+                <select id="speed-filter">
+                  <option value="all">Any speed</option>
+                  <option value="bullet">Bullet</option>
+                  <option value="blitz">Blitz</option>
+                  <option value="rapid">Rapid</option>
+                  <option value="classical">Classical</option>
+                  <option value="correspondence">Correspondence</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="empty-draw" class="empty-draw">
+              <span class="empty-knight" aria-hidden="true">♘</span>
+              <h3>Your queue is waiting.</h3>
+              <p>Choose filters if you like, then draw a game.</p>
+            </div>
+
+            <article id="game-card" class="game-card hidden">
+              <div class="game-topline">
+                <div class="badges">
+                  <span id="game-speed" class="badge"></span>
+                  <span id="game-result" class="badge"></span>
+                  <span id="game-analysis" class="badge soft"></span>
+                </div>
+                <time id="game-date"></time>
+              </div>
+              <div class="matchup">
+                <div>
+                  <span id="user-color" class="piece-dot" aria-hidden="true"></span>
+                  <strong id="user-name"></strong>
+                  <span id="user-rating"></span>
+                </div>
+                <span class="versus">vs</span>
+                <div>
+                  <span id="opponent-color" class="piece-dot" aria-hidden="true"></span>
+                  <strong id="opponent-name"></strong>
+                  <span id="opponent-rating"></span>
+                </div>
+              </div>
+              <div class="opening-line">
+                <span>Opening</span>
+                <strong id="game-opening"></strong>
+              </div>
+              <div class="game-actions">
+                <a id="open-game" class="button primary large" href="#" target="_blank" rel="noopener">Open on Lichess →</a>
+                <button id="reviewed-button" class="button secondary" type="button">Mark reviewed</button>
+                <button id="another-button" class="button ghost" type="button">Pick another</button>
+              </div>
+              <p class="analysis-hint">On Lichess, open the analysis board and choose “Request a computer analysis.” When you return, mark it reviewed—or sync again after Lichess finishes to detect it automatically.</p>
+            </article>
+          </section>
+
+          <section class="history-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">Recent activity</p>
+                <h2>Your review history</h2>
+              </div>
+              <p id="last-synced"></p>
+            </div>
+            <div id="history-list" class="history-list"></div>
+          </section>
+        </section>
+
+        <div id="notice" class="notice hidden" role="status"></div>
+      </main>
+
+      <footer>Built for deliberate practice. Your tracking data stays on this computer.</footer>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
